@@ -37,11 +37,7 @@ class MoviesRepository(val context: Context) {
             helper = DBHelper(context)
         }
 
-        if (helper != null) {
-            return helper!!.readableDatabase
-        } else {
-            throw IllegalArgumentException("Database not readable!")
-        }
+        return requireNotNull(helper?.readableDatabase) { "Database not readable!" }
     }
 
     /**
@@ -87,7 +83,7 @@ class MoviesRepository(val context: Context) {
     /**
      * Convert byte array to int array (little endian).
      */
-    fun ByteArray.toIntArray(): Array<Int> {
+    private fun ByteArray.toIntArray(): Array<Int> {
         val intBuf = ByteBuffer.wrap(this)
                 .order(ByteOrder.LITTLE_ENDIAN)
                 .asIntBuffer()
