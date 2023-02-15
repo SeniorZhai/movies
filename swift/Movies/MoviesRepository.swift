@@ -26,7 +26,7 @@ import SQLite3
 final class MoviesRepository {
     
     private var titleWeight = 10.0
-    private var overviewWeight = 1.0
+    private var overviewWeight = 1.0   
     
     private lazy var db: OpaquePointer? = {
         let path = Bundle.main.path(forResource:"movies", ofType: "db")

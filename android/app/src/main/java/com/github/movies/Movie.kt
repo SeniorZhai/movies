@@ -26,5 +26,5 @@ data class Movie(
         val title: String,
         val overview: String,
         val poster: String,
-        val score: Double = 1.0
+        val year: Int
 )

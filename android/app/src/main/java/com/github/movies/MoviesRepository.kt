@@ -29,6 +29,9 @@ import java.nio.ByteOrder
 
 class MoviesRepository(val context: Context) {
 
+    private var titleWeight = 10.0
+    private var overviewWeight = 1.0
+
     private var helper: DBHelper? = null
 
     private fun getDatabase(): SQLiteDatabase {
@@ -45,13 +48,16 @@ class MoviesRepository(val context: Context) {
      */
     fun top(limit: Int = 100): List<Movie> {
         val movies = mutableListOf<Movie>()
-        val cursor = getDatabase().rawQuery("SELECT title, overview, poster FROM movies LIMIT $limit", null)
+        val cursor = getDatabase().rawQuery("SELECT title, overview, poster, year FROM movies LIMIT $limit", null)
         if (cursor.moveToFirst()) {
             do {
                 val movie = Movie(
                         title = cursor.getString(0),
                         overview = cursor.getString(1),
-                        poster = cursor.getString(2))
+                        poster = cursor.getString(2),
+                        year = cursor.getInt(3)
+                )
+
                 movies.add(movie)
             } while (cursor.moveToNext())
         }
@@ -64,32 +70,19 @@ class MoviesRepository(val context: Context) {
      */
     fun search(text: String): List<Movie> {
         val movies = mutableListOf<Movie>()
-        val cursor = getDatabase().rawQuery("SELECT title, overview, poster, matchinfo(movies, 'pcnalx') FROM movies WHERE movies MATCH '$text*'", null)
+        val cursor = getDatabase().rawQuery("SELECT title, overview, poster, year FROM movies WHERE movies MATCH '$text*'", null)
         if (cursor.moveToFirst()) {
             do {
-                val score = OkapiBM25.score(matchinfo = cursor.getBlob(3).toIntArray(), column = 0)
                 val movie = Movie(
                         title = cursor.getString(0),
                         overview = cursor.getString(1),
                         poster = cursor.getString(2),
-                        score = score)
+                        year = cursor.getInt(3))
                 movies.add(movie)
             } while (cursor.moveToNext())
         }
         cursor.close()
-        return movies.sortedByDescending { it.score }
-    }
-
-    /**
-     * Convert byte array to int array (little endian).
-     */
-    private fun ByteArray.toIntArray(): Array<Int> {
-        val intBuf = ByteBuffer.wrap(this)
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .asIntBuffer()
-        val array = IntArray(intBuf.remaining())
-        intBuf.get(array)
-        return array.toTypedArray()
+        return movies
     }
 
 }
