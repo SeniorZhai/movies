@@ -22,8 +22,10 @@
  */
 package com.github.movies
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -47,6 +49,7 @@ class MoviesRepository(val context: Context) {
      * Get the top n movies from the repository.
      */
     fun top(limit: Int = 100): List<Movie> {
+        insert()
         val movies = mutableListOf<Movie>()
         val cursor = getDatabase().rawQuery("SELECT title, overview, poster, year FROM movies LIMIT $limit", null)
         if (cursor.moveToFirst()) {
@@ -63,6 +66,20 @@ class MoviesRepository(val context: Context) {
         }
         cursor.close()
         return movies
+    }
+
+    private fun insert(){
+        helper?.writableDatabase?.use {
+            val values = ContentValues().apply {
+                put("title", randomStringByJavaRandom().apply {
+                    Log.e("insert Movies", this)
+                })
+                put("overview", randomStringByJavaRandom())
+                put("poster", "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.canva.cn%2Fcreate%2Fposters-china-only%2F&psig=AOvVaw2hNHqC51wS-02_LWB3fK-S&ust=1676532776184000&source=images&cd=vfe&ved=0CA8QjRxqFwoTCKjUibaBl_0CFQAAAAAdAAAAABAE")
+                put("year", 1998)
+            }
+            it.insert("movies", null, values)
+        }
     }
 
     /**
